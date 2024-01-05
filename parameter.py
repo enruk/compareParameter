@@ -4,8 +4,8 @@ class parameter:
         self.value = value
         
 class parameter_list:
-    def __init__(self,xml_file_path):
-        self.file_path = xml_file_path
+    def __init__(self,TcPOU_file_path):
+        self.file_path = TcPOU_file_path
         self.parameters = []
         
     def read_list_from_xml(self):

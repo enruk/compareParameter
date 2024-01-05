@@ -104,13 +104,30 @@ class excel_file:
                 
 
 class project:
-    def __init__(self,name,file_path_standard_template, file_path_standard_templates_changes,column_in_excel):
+    def __init__(self,name,folder_path_project,column_in_excel):
         self.name = name
-        self.file_path_standard_template = file_path_standard_template
-        self.file_path_standard_templates_changes = file_path_standard_templates_changes
+        self.folder_path = folder_path_project
+        self.file_path_standard_template = ""
+        self.file_path_standard_templates_changes = ""
         self.standard_template = parameter_list
         self.standard_templates_changes = parameter_list
         self.column_in_excel = column_in_excel
+        
+    def get_path_of_templates(self):
+        
+        additional_path = "/OverheadSystems/ProjectSpecials"
+        name_standardtemplate = "PRG_StandardTemplate.TcPOU"
+        name_standardtemplateschanges = "PRG_StandardTemplatesChanges.TcPOU"
+        path_project_special = self.folder_path + additional_path       
+        files = os.listdir(path_project_special)
+                
+        if name_standardtemplate in files and name_standardtemplateschanges in files:
+            self.file_path_standard_template = path_project_special + "/" +name_standardtemplate
+            self.file_path_standard_templates_changes = path_project_special + "/" +name_standardtemplateschanges
+        else:
+            print(f"For the projekt '{self.name}' it was not possible to find the PRG_StandardTemplate.TcPOU and / or the PRG_StandardTemplatesChanges.TcPOU")
+
+        
     
     def fill_parameter_lists_from_xml(self):
         self.standard_template = parameter_list(self.file_path_standard_template)
@@ -131,24 +148,30 @@ class project:
                 
                 
 if __name__ == "__main__":
+    
     root = tk.Tk()
     app = gui.user_interface(root)
     root.mainloop()
     
-    # format data_array project_data[X][Y], X projectnumber, Y data, 0=name, 1=xml_standardtemplate , 2=xml_standardtemplatechanges
+    # format data_array from gui to project_data[X][Y], X project, Y data (0=name, 1=folder path)
     app.data_array = list(filter(lambda x: x != "", app.data_array))
     project_data = []
-    project_data = [app.data_array[i:i+3] for i in range(0, len(app.data_array), 3)]
+    project_data = [app.data_array[i:i+2] for i in range(0, len(app.data_array), 2)]  
     
     # read projects
     project_list = []
     number_of_projects = int(len(app.data_array)/3)
     for index_in_project_list in range(number_of_projects):
         # create new project
+        project_name = project_data[index_in_project_list][0]
+        project_folder_path = project_data[index_in_project_list][1]
         column_in_excel = index_in_project_list + 2 #column 1=parameters, therefore first project[0] in column = 2
-        new_project = project(project_data[index_in_project_list][0],project_data[index_in_project_list][1],project_data[index_in_project_list][2],column_in_excel) 
+        new_project = project(project_name,project_folder_path,column_in_excel) 
         
-        # fill parameter_list with data from xml
+        # get file pathes of standardTemplate and StandardTemplatesChanges
+        new_project.get_path_of_templates()
+        
+        # fill parameter_list with data from templates
         new_project.fill_parameter_lists_from_xml()
         
         # overwrite parameter from standardtemplateschanges to standardtemplate

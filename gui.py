@@ -21,7 +21,7 @@ class projectrow:
         self.project_entry.config(width=entries_width_small)
 
 
-class xml_inputrow:
+class inputrow:
     
     def __init__(self, root, targetrow, labelname):
         
@@ -30,20 +30,21 @@ class xml_inputrow:
         self.labelname = labelname
     
         # Row X+1        
-        self.xml_path_label = tk.Label(root, text=self.labelname)
-        self.xml_path_label.grid(row=self.targetrow, column=0, padx=10, pady=10,sticky= "w")
+        self.project_name_entry = tk.Entry(root)
+        self.project_name_entry.grid(row=self.targetrow, column=0, padx=10, pady=10,sticky= "w")
+        self.project_name_entry.config(width=entries_width_small)
         
-        self.xml_path_button = tk.Button(root, text="Choose XML-File", command=self.choose_xml_file)
-        self.xml_path_button.grid(row=self.targetrow, column=1, padx=10, pady=10,sticky= "w")
+        self.folder_path_button = tk.Button(root, text="Choose PLC Projekt Folder", command=self.choose_folder)
+        self.folder_path_button.grid(row=self.targetrow, column=1, padx=10, pady=10,sticky= "w")
         
-        self.xml_path_variable = tk.StringVar()
-        self.xml_path_entry = tk.Entry(self.root,textvariable=self.xml_path_variable,state='readonly',width=entries_width_big)
-        self.xml_path_entry.grid(row=self.targetrow, column=2, padx=10, pady=10,sticky= "w")
+        self.folder_path_variable = tk.StringVar()
+        self.folder_path_entry = tk.Entry(self.root,textvariable=self.folder_path_variable,state='readonly',width=entries_width_big)
+        self.folder_path_entry.grid(row=self.targetrow, column=2, padx=10, pady=10,sticky= "w")
         
-    def choose_xml_file(self):
-        file_path = filedialog.askopenfilename(filetypes=[("XML-Dateien", "*.xml")])
-        if file_path:
-            self.xml_path_variable.set(file_path)       
+    def choose_folder(self):
+        folder_path = filedialog.askdirectory(title="Choose PLC Project Folder")
+        if folder_path:
+            self.folder_path_variable.set(folder_path)       
 
 
 class user_interface:
@@ -72,27 +73,33 @@ class user_interface:
         self.run_button = tk.Button(root, text="Run", command=self.close_window)
         self.run_button.grid(row=0, column=2, pady=10,sticky="e")
         
+        # Row 1
+        self.header_project_name = tk.Label(root, text="Projectname")
+        self.header_project_name.grid(row=1, column=0, pady=10,sticky= "w")
+        
+        self.header_project_folder = tk.Label(root, text="Projectfolder")
+        self.header_project_folder.grid(row=1, column=1, pady=10,sticky= "w")
+        
         self.row_widgets = []
         
         self.add_new_project()
+        
+        self.fixed_width = 1200
+        self.initial_height = 150
+        self.root.geometry(f"{self.fixed_width}x{self.initial_height}")
+        
 
 
     def add_new_project(self):
         
         new_row = self.add_row()
-        new_projectrow = projectrow(self.root,new_row)
-        self.row_widgets.append(new_projectrow)
-        self.entry_widgets.append(new_projectrow.project_entry)
         
-        new_standardtemplate_row = xml_inputrow(self.root,new_row+1,"Filepath StandardTemplate.xml:")
-        self.row_widgets.append(new_standardtemplate_row)
-        self.entry_widgets.append(new_standardtemplate_row.xml_path_entry)
+        new_project_row = inputrow(self.root,new_row+1,"Folderpath PLC Project")
+        self.row_widgets.append(new_project_row)
+        self.entry_widgets.append(new_project_row.project_name_entry)
+        self.entry_widgets.append(new_project_row.folder_path_entry)
         
-        new_standardtemplateschanges_row = xml_inputrow(self.root,new_row+2,"Filepath StandardTemplatesChanges.xml:")
-        self.row_widgets.append(new_standardtemplateschanges_row)
-        self.entry_widgets.append(new_standardtemplateschanges_row.xml_path_entry)
-        
-        self.new_height = self.root.winfo_height() + 200 
+        self.new_height = self.root.winfo_height() + 80 
         self.root.geometry(f"{self.fixed_width}x{self.new_height}")
 
 
