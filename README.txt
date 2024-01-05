@@ -1,10 +1,10 @@
 # compareXML
 
 ##DESCRIPTION
-compare standardtemplate.xml of different PLCs to be able to compare parameters in the different projects
+compare standardtemplate.xml of different PLCs to be able to compare parameters in different projects
 
 ## VERSION
-1.0 - 18.12.2023
+1.0 - 18.12.2023 HT
 
 ## HOWTO
 
