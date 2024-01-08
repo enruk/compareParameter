@@ -8,7 +8,13 @@ class parameter_list:
         self.file_path = TcPOU_file_path
         self.parameters = []
         
-    def read_list_from_xml(self):
+    def add_parameters(self,parameter):
+        self.parameters.extend(parameter)    
+    
+    def read_param_from_file(self):
+        
+        # method is writing all lines with GVL in a parameter list
+        
         with open(self.file_path, 'r') as file:
             for line in file:
                 line = line.strip()
@@ -25,3 +31,43 @@ class parameter_list:
                     value = value.strip(" =;")  # Entferne Leerzeichen, Gleichzeichen und Semikolon von Werten
                     parameter_instance = parameter(name=param,value=value)
                     self.parameters.append(parameter_instance)
+                    
+                    
+    def read_local_param_from_file(self):
+        
+        # method is writing all lines with GVL in a parameter list, except for the "not_wanted_param"
+        
+        with open(self.file_path, 'r') as file:
+            parameters_reached = False
+            row_counter = 0
+            for line in file:
+                row_counter = row_counter + 1 # only for debugging needed
+                line = line.strip()
+                
+                # look for the actParameterChanges
+                if "MAIN.instProfiler" in line:
+                    parameters_reached = True
+                
+                if parameters_reached:
+                    # remove the comment
+                    if '//' in line:
+                        comment = line.split('//', 1)[1].strip()
+                        line = line.split('//', 1)[0].strip()
+                    else:
+                        comment = None
+                        
+                    # check if parameter has more then 3 parts, separated by dots
+                    if line.startswith("GVL_"):
+                        front_string = line.split("=",1)[0]
+                        parts = front_string.split(".")
+                        
+                        if len(parts) > 3:
+                            not_wanted_param = ["deviceInfo","exitNumber","isAlwaysActive","directionReversal"]
+    
+                            if ":" in line and ";" in line and not any(param in line for param in not_wanted_param):
+                                param, value = line.strip(";").split(":")
+                                param = param.strip(" \t")  # Entferne Leerzeichen und Tabulatoren von Parametern
+                                value = value.strip(" =;")  # Entferne Leerzeichen, Gleichzeichen und Semikolon von Werten
+                                parameter_instance = parameter(name=param,value=value)
+                                self.parameters.append(parameter_instance)
+                                

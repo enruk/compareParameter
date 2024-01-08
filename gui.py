@@ -57,15 +57,15 @@ class user_interface:
         self.root.title("Compare XML Files")
         self.root.columnconfigure(0, minsize=350)
         self.root.columnconfigure(1, minsize=150)
-        self.root.columnconfigure(2, minsize=450)
+        self.root.columnconfigure(2, minsize=500)
 
-        self.fixed_width = 1200
-        self.initial_height = 600
+        self.fixed_width = 900
+        self.initial_height = 200
         self.root.geometry(f"{self.fixed_width}x{self.initial_height}")
         
         # Row 0
         self.short_info = tk.Label(root, text="Helptext")
-        self.short_info.grid(row=0, column=0, pady=10,sticky= "w")
+        self.short_info.grid(row=0, column=0, padx=10, pady=10,sticky= "w")
         
         self.add_button = tk.Button(root, text="Add Project", command=self.add_new_project)
         self.add_button.grid(row=0, column=1, pady=10)
@@ -75,20 +75,19 @@ class user_interface:
         
         # Row 1
         self.header_project_name = tk.Label(root, text="Projectname")
-        self.header_project_name.grid(row=1, column=0, pady=10,sticky= "w")
+        self.header_project_name.grid(row=1, column=0, padx=10, pady=10,sticky= "w")
         
         self.header_project_folder = tk.Label(root, text="Projectfolder")
-        self.header_project_folder.grid(row=1, column=1, pady=10,sticky= "w")
+        self.header_project_folder.grid(row=1, column=1, padx=10, pady=10,sticky= "w")
         
         self.row_widgets = []
         
         self.add_new_project()
         
-        self.fixed_width = 1200
+        self.fixed_width = 900
         self.initial_height = 150
         self.root.geometry(f"{self.fixed_width}x{self.initial_height}")
-        
-
+    
 
     def add_new_project(self):
         

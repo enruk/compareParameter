@@ -7,14 +7,19 @@ from parameter import parameter_list
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
      
 class excel_file:
-    def __init__(self,project_list):
-        self.name = "Compare_Standardtemplates"
+    def __init__(self,name,project_list):
+        self.name = name
         self.file_path = ""
+        self.folder_path = ""
         self.project_list = project_list 
         
     def set_target_file_path(self): 
         desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
-        self.file_path = os.path.join(desktop_path, f"{self.name}.xlsx")              
+        
+        self.folder_path = os.path.join(desktop_path, "Parameter Comparison")
+        if not os.path.exists(self.folder_path):
+            os.mkdir(self.folder_path)
+        self.file_path = os.path.join(self.folder_path, f"{self.name}.xlsx")              
 
     def write_first_project_to_excel(self):
         
@@ -26,6 +31,18 @@ class excel_file:
             row_b.append(parameter.value)
         
         df = panda.DataFrame({'Parameter': row_a, self.project_list[0].name: row_b})
+        df.to_excel(self.file_path,index=False)  
+        
+    def write_local_changes_to_excel(self,index_in_project_list):
+        
+        row_a = []
+        row_b = []
+        
+        for parameter in self.project_list[index_in_project_list].local_parameter_changes.parameters:
+            row_a.append(parameter.name)
+            row_b.append(parameter.value)
+        
+        df = panda.DataFrame({'Parameter': row_a, self.project_list[index_in_project_list].name: row_b})
         df.to_excel(self.file_path,index=False)  
         
     def add_next_project(self,index_in_project_list):
@@ -106,35 +123,65 @@ class excel_file:
 class project:
     def __init__(self,name,folder_path_project,column_in_excel):
         self.name = name
-        self.folder_path = folder_path_project
+        
+        self.path_to_PLC_folder = folder_path_project
+        self.path_to_project_special_folder = ""
+        self.path_to_project_folder= ""
         self.file_path_standard_template = ""
         self.file_path_standard_templates_changes = ""
+        
         self.standard_template = parameter_list
         self.standard_templates_changes = parameter_list
+        self.local_parameter_changes = parameter_list
         self.column_in_excel = column_in_excel
         
     def get_path_of_templates(self):
         
-        additional_path = "/OverheadSystems/ProjectSpecials"
+        self.path_to_project_special_folder = self.path_to_PLC_folder + "/OverheadSystems/ProjectSpecials" 
+        
         name_standardtemplate = "PRG_StandardTemplate.TcPOU"
         name_standardtemplateschanges = "PRG_StandardTemplatesChanges.TcPOU"
-        path_project_special = self.folder_path + additional_path       
-        files = os.listdir(path_project_special)
+         
+        files = os.listdir(self.path_to_project_special_folder)
                 
         if name_standardtemplate in files and name_standardtemplateschanges in files:
-            self.file_path_standard_template = path_project_special + "/" +name_standardtemplate
-            self.file_path_standard_templates_changes = path_project_special + "/" +name_standardtemplateschanges
+            self.file_path_standard_template = self.path_to_project_special_folder + "/" +name_standardtemplate
+            self.file_path_standard_templates_changes = self.path_to_project_special_folder + "/" +name_standardtemplateschanges
         else:
             print(f"For the projekt '{self.name}' it was not possible to find the PRG_StandardTemplate.TcPOU and / or the PRG_StandardTemplatesChanges.TcPOU")
 
+    def get_local_changes(self):
         
+        self.local_parameter_changes = parameter_list("dummy_path")
+        
+        # go to project folder and get all folders of the PLC programm
+        self.path_to_project_folder = self.path_to_PLC_folder + "/OverheadSystems/Project"
+        content_project_folder = os.listdir(self.path_to_project_folder)
+        content_not_to_check = ["Hardware", "Area50", "General", "GVLs","MAIN.TcPOU"]
+        clean_project_folder = [folder for folder in content_project_folder if folder not in content_not_to_check]
+        
+        # go in every sub folders and get all programs in each sub folder
+        for sub_folder in clean_project_folder:
+            temp_sub_folder_path = self.path_to_project_folder + "/" + sub_folder
+            content_program_folder = os.listdir(temp_sub_folder_path)
+            clean_program_folder = [element for element in content_program_folder if element != "DUTs"]
+            
+            # go throw all programs, create a temporaly list of local changes
+            for program in clean_program_folder:
+                program_path = temp_sub_folder_path + "/" + program
+                temp_parameter_list = parameter_list(program_path)
+                temp_parameter_list.read_local_param_from_file()
+                
+                # copy all temporary changes to the main list for local changes
+                self.local_parameter_changes.parameters.extend(temp_parameter_list.parameters)
+                temp_parameter_list.parameters.clear()
     
     def fill_parameter_lists_from_xml(self):
         self.standard_template = parameter_list(self.file_path_standard_template)
-        self.standard_template.read_list_from_xml()
+        self.standard_template.read_param_from_file()
         
         self.standard_templates_changes = parameter_list(self.file_path_standard_templates_changes)
-        self.standard_templates_changes.read_list_from_xml()
+        self.standard_templates_changes.read_param_from_file()
     
     def write_changes_to_standard_template(self):
         for parameter_changes in self.standard_templates_changes.parameters:
@@ -160,7 +207,7 @@ if __name__ == "__main__":
     
     # read projects
     project_list = []
-    number_of_projects = int(len(app.data_array)/3)
+    number_of_projects = int(len(project_data))
     for index_in_project_list in range(number_of_projects):
         # create new project
         project_name = project_data[index_in_project_list][0]
@@ -174,14 +221,17 @@ if __name__ == "__main__":
         # fill parameter_list with data from templates
         new_project.fill_parameter_lists_from_xml()
         
-        # overwrite parameter from standardtemplateschanges to standardtemplate
+        # ove#rwrite parameter from standardtemplateschanges to standardtemplate
         new_project.write_changes_to_standard_template()
+        
+        # get the local changes
+        new_project.get_local_changes()
         
         # add project to projectlist
         project_list.append(new_project)
     
     # create excel file and get desktop path
-    excel = excel_file(project_list)
+    excel = excel_file("Parameter Comparison",project_list)
     excel.set_target_file_path()
     
     # write first project to excel
@@ -192,6 +242,12 @@ if __name__ == "__main__":
         for index_in_project_list in range(1,number_of_projects):
             excel.add_next_project(index_in_project_list)
             excel.compare_parameters_to_master_parameters(index_in_project_list)
+        
+    for index_in_project_list in range(number_of_projects):
+        excel_local_changes = excel_file(project_list[index_in_project_list].name,project_list)
+        excel_local_changes.set_target_file_path()
+        excel_local_changes.write_local_changes_to_excel(index_in_project_list)
+            
 
     # Add 2 columns between A and B and split GVL to make it easier to filter in excel
     excel.format_sheet()
