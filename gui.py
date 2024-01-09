@@ -93,7 +93,7 @@ class user_interface:
         self.fixed_width = 900
         self.initial_height = 170
         self.root.geometry(f"{self.fixed_width}x{self.new_height}")
-        self.root.minsize(900, 200)  # Mindesthöhe von 200 Pixeln  
+        self.root.minsize(900, 200)  
         self.root.resizable(width=False, height=True)
 
 
@@ -108,8 +108,6 @@ class user_interface:
         
         self.new_height = self.root.winfo_height() + 50 
         self.root.geometry(f"{self.fixed_width}x{self.new_height}")
-        self.root.minsize(900, 200)  # Mindesthöhe von 200 Pixeln
-        self.root.resizable(width=False, height=True)
 
 
     def delete_row(self):
@@ -125,8 +123,6 @@ class user_interface:
             
             self.new_height = self.root.winfo_height() - 50 
             self.root.geometry(f"{self.fixed_width}x{self.new_height}")
-        self.root.minsize(900, 200)  # Mindesthöhe von 200 Pixeln
-        self.root.resizable(width=False, height=True)
 
     def add_row(self):
         row_count = self.root.grid_size()[1]

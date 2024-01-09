@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <IgnoredFolders>
+        <Description>Folders in the main project folder which programs are not scanned for local changes </Description>
+        <Folder>Hardware</Folder>
+        <Folder>Area50</Folder>
+        <Folder>General</Folder>
+        <Folder>GVLs</Folder>
+        <Folder>MAIN.TcPOU</Folder>
+    </IgnoredFolders>
+    
+    <IgnoredParameters>
+        <Description>Parameters that are ignored while script is searching for local changes</Description>
+        <Parameter>deviceInfo</Parameter>
+        <Parameter>exitNumber</Parameter>
+        <Parameter>isAlwaysActive</Parameter>
+        <Parameter>directionReversal</Parameter>
+    </IgnoredParameters>
+</Configuration>

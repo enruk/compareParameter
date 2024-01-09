@@ -1,0 +1,215 @@
+import pandas as panda 
+import os
+import openpyxl 
+from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
+import xml.etree.ElementTree as ET
+     
+class excel_file:
+    
+    def __init__(self,name):
+        self.name = name
+        self.path_file_comparison = ""
+        self.path_folder = ""
+        self.project_list = []
+   
+        self.ignored_parameters = []
+        self.Ignored_folders = []
+        
+        self.filter = []
+        self.predefined_filter = False
+        self.predefined_filter_index = 1, # 1=induction, 2=dynamicbuffer, 3=orderbuffer, 4=matrix_presorter, 5=packing
+
+        
+    def set_target_file_path(self): 
+        desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
+        
+        self.path_folder = os.path.join(desktop_path, "Parameter Comparison")
+        if not os.path.exists(self.path_folder):
+            os.mkdir(self.path_folder)
+        self.path_file_comparison = os.path.join(self.path_folder, f"{self.name}.xlsx")          
+        
+        
+    def get_info_for_script(self):
+
+        # get path to xml
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        xml_file_path = os.path.join(script_dir, 'stuff_to_ignore.xml')
+
+        # parse the XML data
+        tree = ET.parse(xml_file_path)
+        wurzel = tree.getroot()
+
+        # find IgnoredFolders
+        self.Ignored_folders.clear()
+        for folder_element in wurzel.find('IgnoredFolders'):
+            if folder_element.tag == 'Folder':
+                self.Ignored_folders.append(folder_element.text)
+                
+        # find IgnoredParameters
+        self.ignored_parameters.clear()
+        for parameter_element in wurzel.find('IgnoredParameters'):
+            if parameter_element.tag == 'Parameter':
+                self.ignored_parameters.append(parameter_element.text)
+        
+        
+    def get_filters(self):
+        
+        # get path to xml
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        xml_file_path = os.path.join(script_dir, 'stuff_to_ignore.xml')
+
+        # parse the XML data
+        tree = ET.parse(xml_file_path)
+        wurzel = tree.getroot()
+
+        # find IgnoredFolders
+        self.filter.clear()
+        
+        for element in wurzel.find('Always'):
+            if element.tag == 'Filter':
+                self.filter.append(element.text)
+        
+        if self.predefined_filter_index == 1:
+            for element in wurzel.find('Induction'):
+                if element.tag == 'Filter':
+                    self.filter.append(element.text)
+                    
+        elif self.predefined_filter_index == 2:   
+            for element in wurzel.find('Dynamicbuffer'):
+                if element.tag == 'Filter':
+                    self.filter.append(element.text)
+                    
+        elif self.predefined_filter_index == 3:   
+            for element in wurzel.find('Orderbuffer'):
+                if element.tag == 'Filter':
+                    self.filter.append(element.text)  
+                      
+        elif self.predefined_filter_index == 4:   
+            for element in wurzel.find('Matrix_Presorter'):
+                if element.tag == 'Filter':
+                    self.filter.append(element.text)    
+                    
+        elif self.predefined_filter_index == 5:   
+            for element in wurzel.find('Packing'):
+                if element.tag == 'Filter':
+                    self.filter.append(element.text)
+                    
+        elif self.predefined_filter_index == 6:   
+            for element in wurzel.find('Crossover'):
+                if element.tag == 'Filter':
+                    self.filter.append(element.text)  
+        
+                
+    def write_first_project_to_excel(self):
+        
+        row_a = []
+        row_b = []
+        
+        for parameter in self.project_list[0].standard_template.parameters:
+            row_a.append(parameter.name)
+            row_b.append(parameter.value)
+        
+        df = panda.DataFrame({'Parameter': row_a, self.project_list[0].name: row_b})
+        df.to_excel(self.path_file_comparison,index=False)  
+        
+        
+    def add_next_project_to_excel(self,index_in_project_list):
+        
+        workbook = openpyxl.load_workbook(self.path_file_comparison)
+        sheet = workbook.active
+        sheet.cell(row=1, column=self.project_list[index_in_project_list].column_in_excel, value=self.project_list[index_in_project_list].name)
+        
+        for parameter in self.project_list[index_in_project_list].standard_template.parameters:
+            look_up_parameter = parameter.name
+            counter = 0
+            look_up_parameter_found = False
+            for row in sheet.iter_rows(min_row=1, max_col=1, max_row=sheet.max_row, values_only=True):
+                counter = counter + 1
+                if row[0] == look_up_parameter:
+                    sheet.cell(row=counter, column=self.project_list[index_in_project_list].column_in_excel, value=parameter.value)
+                    look_up_parameter_found = True
+                    break
+            
+            # if parameter wasnt found add it at the end
+            if not look_up_parameter_found:
+                next_free_row = sheet.max_row+1
+                sheet.cell(row=next_free_row, column=1, value=parameter.name)
+                sheet.cell(row=next_free_row, column=self.project_list[index_in_project_list].column_in_excel, value=parameter.value)
+    
+        workbook.save(self.path_file_comparison)
+        
+        
+    def compare_parameters_to_master_parameters(self,index_in_project_list):
+        
+        workbook = openpyxl.load_workbook(self.path_file_comparison)
+        sheet = workbook.active
+        
+        counter = 2
+        for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, values_only=True):
+            
+            value_row_master = str(row[1]) 
+            value_row_x = str(row[self.project_list[index_in_project_list].column_in_excel-1])  
+
+            if value_row_master != value_row_x:
+                    cell = sheet.cell(row=counter,column = self.project_list[index_in_project_list].column_in_excel)
+                    cell.fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
+            counter = counter + 1
+        
+        workbook.save(self.path_file_comparison)
+        
+        
+    def write_local_changes_to_excel(self,index_in_project_list):
+        
+        row_a = []
+        row_b = []
+        
+        for parameter in self.project_list[index_in_project_list].local_parameter_changes.parameters:
+            row_a.append(parameter.name)
+            row_b.append(parameter.value)
+        
+        df = panda.DataFrame({'Parameter': row_a, self.project_list[index_in_project_list].name: row_b})
+        df.to_excel(self.path_file_comparison,index=False)  
+    
+    def set_filters(self):
+        
+        #load workbook
+        workbook = openpyxl.load_workbook(self.path_file_comparison)
+        sheet = workbook.active
+       
+        # set filters
+        column_b = sheet['B']
+        column_b.auto_filter.ref = column_b.dimensions
+        column_b.auto_filter.add_filter_column(1, list(self.filter))
+
+        workbook.save(self.path_file_comparison)
+       
+        
+    def format_sheet(self):
+        workbook = openpyxl.load_workbook(self.path_file_comparison)
+        sheet = workbook.active
+        sheet.insert_cols(2, amount=2)
+        
+        counter = 2
+        for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, values_only=True):
+            if row[0] and "." in row[0]:
+                parts = row[0].split(".")
+                sheet.cell(row=counter, column=1).value = parts[0] if len(parts) >= 1 else ""
+                sheet.cell(row=counter, column=2).value = parts[1] if len(parts) >= 2 else ""
+                sheet.cell(row=counter, column=3).value = parts[2] if len(parts) >= 3 else ""
+            counter = counter + 1
+            
+        for column_letter in "ABCDEFGH":
+            sheet.column_dimensions[column_letter].width = 50
+            
+        font = Font(bold=True)
+        alignment = Alignment(horizontal='center')
+        border = Border(top=Side(style='thin'), bottom=Side(style='thin'), left=Side(style='thin'), right=Side(style='thin'))
+
+        header = sheet[1]
+        # Setze die Formatierung für jede Zelle in der oberen Zeile
+        for cell in header:
+            cell.font = font
+            cell.alignment = alignment
+            cell.border = border
+
+        workbook.save(self.path_file_comparison)

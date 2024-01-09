@@ -14,7 +14,6 @@ class parameter_list:
     def read_param_from_file(self):
         
         # method is writing all lines with GVL in a parameter list
-        
         with open(self.file_path, 'r') as file:
             for line in file:
                 line = line.strip()
@@ -33,10 +32,9 @@ class parameter_list:
                     self.parameters.append(parameter_instance)
                     
                     
-    def read_local_param_from_file(self):
+    def read_local_param_from_file(self,ignored_param):
         
-        # method is writing all lines with GVL in a parameter list, except for the "not_wanted_param"
-        
+        # method is writing all lines with GVL in a parameter list, except for the "ignored_param"
         with open(self.file_path, 'r') as file:
             parameters_reached = False
             row_counter = 0
@@ -61,10 +59,7 @@ class parameter_list:
                         front_string = line.split("=",1)[0]
                         parts = front_string.split(".")
                         
-                        if len(parts) > 3:
-                            not_wanted_param = ["deviceInfo","exitNumber","isAlwaysActive","directionReversal"]
-    
-                            if ":" in line and ";" in line and not any(param in line for param in not_wanted_param):
+                        if len(parts) > 3 and ":" in line and ";" in line and not any(param in line for param in ignored_param):
                                 param, value = line.strip(";").split(":")
                                 param = param.strip(" \t")  # Entferne Leerzeichen und Tabulatoren von Parametern
                                 value = value.strip(" =;")  # Entferne Leerzeichen, Gleichzeichen und Semikolon von Werten
