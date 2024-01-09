@@ -16,6 +16,8 @@ class project:
         self.local_parameter_changes = parameter_list
         self.column_in_excel = column_in_excel
         
+        self.path_file_local_changes = ""
+        
         
     def get_path_of_templates(self):
         

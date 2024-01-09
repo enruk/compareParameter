@@ -3,30 +3,33 @@ import os
 import openpyxl 
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 import xml.etree.ElementTree as ET
+from openpyxl.worksheet.filters import FilterColumn, CustomFilter
      
-class excel_file:
+class excel:
     
     def __init__(self,name):
         self.name = name
         self.path_file_comparison = ""
-        self.path_folder = ""
+        self.path_file_local_changes = ""
+        self.path_file_filtered_comparion = ""
+        self.path_target_folder = ""
         self.project_list = []
    
         self.ignored_parameters = []
         self.Ignored_folders = []
         
         self.filter = []
-        self.predefined_filter = False
-        self.predefined_filter_index = 1, # 1=induction, 2=dynamicbuffer, 3=orderbuffer, 4=matrix_presorter, 5=packing
+        self.filters_on = False
+        self.filter_index = 0, # 1=induction, 2=dynamicbuffer, 3=orderbuffer, 4=matrix_presorter, 5=packing
 
         
     def set_target_file_path(self): 
         desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
         
-        self.path_folder = os.path.join(desktop_path, "Parameter Comparison")
-        if not os.path.exists(self.path_folder):
-            os.mkdir(self.path_folder)
-        self.path_file_comparison = os.path.join(self.path_folder, f"{self.name}.xlsx")          
+        self.path_target_folder = os.path.join(desktop_path, "Parameter Comparison")
+        if not os.path.exists(self.path_target_folder):
+            os.mkdir(self.path_target_folder)
+        self.path_file_comparison = os.path.join(self.path_target_folder, f"{self.name}.xlsx")          
         
         
     def get_info_for_script(self):
@@ -56,7 +59,7 @@ class excel_file:
         
         # get path to xml
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        xml_file_path = os.path.join(script_dir, 'stuff_to_ignore.xml')
+        xml_file_path = os.path.join(script_dir, 'filters.xml')
 
         # parse the XML data
         tree = ET.parse(xml_file_path)
@@ -69,32 +72,32 @@ class excel_file:
             if element.tag == 'Filter':
                 self.filter.append(element.text)
         
-        if self.predefined_filter_index == 1:
+        if self.filter_index == 1:
             for element in wurzel.find('Induction'):
                 if element.tag == 'Filter':
                     self.filter.append(element.text)
                     
-        elif self.predefined_filter_index == 2:   
+        elif self.filter_index == 2:   
             for element in wurzel.find('Dynamicbuffer'):
                 if element.tag == 'Filter':
                     self.filter.append(element.text)
                     
-        elif self.predefined_filter_index == 3:   
+        elif self.filter_index == 3:   
             for element in wurzel.find('Orderbuffer'):
                 if element.tag == 'Filter':
                     self.filter.append(element.text)  
                       
-        elif self.predefined_filter_index == 4:   
+        elif self.filter_index == 4:   
             for element in wurzel.find('Matrix_Presorter'):
                 if element.tag == 'Filter':
                     self.filter.append(element.text)    
                     
-        elif self.predefined_filter_index == 5:   
+        elif self.filter_index == 5:   
             for element in wurzel.find('Packing'):
                 if element.tag == 'Filter':
                     self.filter.append(element.text)
                     
-        elif self.predefined_filter_index == 6:   
+        elif self.filter_index == 6:   
             for element in wurzel.find('Crossover'):
                 if element.tag == 'Filter':
                     self.filter.append(element.text)  
@@ -168,23 +171,41 @@ class excel_file:
             row_b.append(parameter.value)
         
         df = panda.DataFrame({'Parameter': row_a, self.project_list[index_in_project_list].name: row_b})
-        df.to_excel(self.path_file_comparison,index=False)  
+        df.to_excel(self.path_file_comparison,index=False) 
+    
+    
+    def create_filtered_copy(self):
+        self.path_file_filtered_comparion = os.path.join(self.path_target_folder, "Filtered Parameter Comparison.xlsx")
+        original_dataframe = panda.read_excel(self.path_file_comparison)
+
+        # Gib die Spaltennamen aus, um den korrekten Namen für Spalte "B" zu finden
+        print("Spaltennamen:", original_dataframe.columns)
+
+        filtered_dataframe = original_dataframe[original_dataframe['Unnamed: 1'].isin(self.filter)]
+        filtered_dataframe.to_excel(self.path_file_filtered_comparion, index=False)
+    
     
     def set_filters(self):
+        
+        # NOT WORKING SO FAR
         
         #load workbook
         workbook = openpyxl.load_workbook(self.path_file_comparison)
         sheet = workbook.active
        
         # set filters
-        column_b = sheet['B']
-        column_b.auto_filter.ref = column_b.dimensions
-        column_b.auto_filter.add_filter_column(1, list(self.filter))
+        #column_B = 'B'  # Ändere dies entsprechend deiner Spalte
+        #sheet.auto_filter.ref = f'{column_B}:{column_B}'
+
+        # Setze den Filter für die gesamte Spalte
+        #filter_column = FilterColumn(column_id=column_B, customFilters=[CustomFilter(operator="contains", val=val) for val in self.filter])
+        #sheet.add_filter_column(filter_column)
+        
 
         workbook.save(self.path_file_comparison)
        
         
-    def format_sheet(self):
+    def format_parameter_column(self):
         workbook = openpyxl.load_workbook(self.path_file_comparison)
         sheet = workbook.active
         sheet.insert_cols(2, amount=2)
@@ -198,9 +219,16 @@ class excel_file:
                 sheet.cell(row=counter, column=3).value = parts[2] if len(parts) >= 3 else ""
             counter = counter + 1
             
+        workbook.save(self.path_file_comparison)
+    
+    
+    def format_sheet(self,path_file):
+        workbook = openpyxl.load_workbook(path_file)
+        sheet = workbook.active
+        
         for column_letter in "ABCDEFGH":
             sheet.column_dimensions[column_letter].width = 50
-            
+        
         font = Font(bold=True)
         alignment = Alignment(horizontal='center')
         border = Border(top=Side(style='thin'), bottom=Side(style='thin'), left=Side(style='thin'), right=Side(style='thin'))
@@ -212,4 +240,4 @@ class excel_file:
             cell.alignment = alignment
             cell.border = border
 
-        workbook.save(self.path_file_comparison)
+        workbook.save(path_file)
