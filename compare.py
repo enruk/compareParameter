@@ -5,14 +5,14 @@ from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 import xml.etree.ElementTree as ET
 from openpyxl.worksheet.filters import FilterColumn, CustomFilter
      
-class excel:
+class comparison:
     
-    def __init__(self,name):
-        self.name = name
-        self.path_file_comparison = ""
-        self.path_file_local_changes = ""
-        self.path_file_filtered_comparion = ""
+    def __init__(self):
+        
         self.path_target_folder = ""
+        self.path_file_comparison = ""
+        self.path_file_filtered_comparion = ""
+        
         self.project_list = []
    
         self.ignored_parameters = []
@@ -29,7 +29,8 @@ class excel:
         self.path_target_folder = os.path.join(desktop_path, "Parameter Comparison")
         if not os.path.exists(self.path_target_folder):
             os.mkdir(self.path_target_folder)
-        self.path_file_comparison = os.path.join(self.path_target_folder, f"{self.name}.xlsx")          
+        self.path_file_comparison = os.path.join(self.path_target_folder, "Parameter Comparison.xlsx")     
+        self.path_file_filtered_comparion = os.path.join(self.path_target_folder, "Fitlered Parameter Comparison.xlsx")     
         
         
     def get_info_for_script(self):
@@ -103,20 +104,21 @@ class excel:
                     self.filter.append(element.text)  
         
                 
-    def write_first_project_to_excel(self):
+    def write_first_project_to_mainfile(self):
         
-        row_a = []
-        row_b = []
+        row_param = []
+        row_value = []
         
+        # 0 because its always the first project
         for parameter in self.project_list[0].standard_template.parameters:
-            row_a.append(parameter.name)
-            row_b.append(parameter.value)
+            row_param.append(parameter.name)
+            row_value.append(parameter.value)
         
-        df = panda.DataFrame({'Parameter': row_a, self.project_list[0].name: row_b})
+        df = panda.DataFrame({'Parameter': row_param, self.project_list[0].name: row_value})
         df.to_excel(self.path_file_comparison,index=False)  
+    
         
-        
-    def add_next_project_to_excel(self,index_in_project_list):
+    def add_next_project_to_mainfile(self,index_in_project_list):
         
         workbook = openpyxl.load_workbook(self.path_file_comparison)
         sheet = workbook.active
@@ -142,7 +144,7 @@ class excel:
         workbook.save(self.path_file_comparison)
         
         
-    def compare_parameters_to_master_parameters(self,index_in_project_list):
+    def compare_parameters_in_mainfile(self,index_in_project_list):
         
         workbook = openpyxl.load_workbook(self.path_file_comparison)
         sheet = workbook.active
@@ -163,52 +165,38 @@ class excel:
         
     def write_local_changes_to_excel(self,index_in_project_list):
         
-        row_a = []
-        row_b = []
+        # create poth for new excel file
+        path_temp = os.path.join(self.path_target_folder,f"{self.project_list[index_in_project_list].name}.xlsx")
         
+        row_param = []
+        row_value = []
+            
         for parameter in self.project_list[index_in_project_list].local_parameter_changes.parameters:
-            row_a.append(parameter.name)
-            row_b.append(parameter.value)
+            row_param.append(parameter.name)
+            row_value.append(parameter.value)
+            
+        df = panda.DataFrame({'Parameter': row_param, self.project_list[index_in_project_list].name: row_value})
+        df.to_excel(path_temp,index=False) 
         
-        df = panda.DataFrame({'Parameter': row_a, self.project_list[index_in_project_list].name: row_b})
-        df.to_excel(self.path_file_comparison,index=False) 
+        self.format_sheet(path_temp)
     
     
     def create_filtered_copy(self):
         self.path_file_filtered_comparion = os.path.join(self.path_target_folder, "Filtered Parameter Comparison.xlsx")
         original_dataframe = panda.read_excel(self.path_file_comparison)
 
-        # Gib die Spaltennamen aus, um den korrekten Namen für Spalte "B" zu finden
-        print("Spaltennamen:", original_dataframe.columns)
-
-        filtered_dataframe = original_dataframe[original_dataframe['Unnamed: 1'].isin(self.filter)]
+        filtered_dataframe = original_dataframe[original_dataframe['Device'].isin(self.filter)]
         filtered_dataframe.to_excel(self.path_file_filtered_comparion, index=False)
     
     
-    def set_filters(self):
-        
-        # NOT WORKING SO FAR
-        
-        #load workbook
-        workbook = openpyxl.load_workbook(self.path_file_comparison)
-        sheet = workbook.active
-       
-        # set filters
-        #column_B = 'B'  # Ändere dies entsprechend deiner Spalte
-        #sheet.auto_filter.ref = f'{column_B}:{column_B}'
-
-        # Setze den Filter für die gesamte Spalte
-        #filter_column = FilterColumn(column_id=column_B, customFilters=[CustomFilter(operator="contains", val=val) for val in self.filter])
-        #sheet.add_filter_column(filter_column)
-        
-
-        workbook.save(self.path_file_comparison)
-       
-        
-    def format_parameter_column(self):
-        workbook = openpyxl.load_workbook(self.path_file_comparison)
+    def format_parameter_column(self, path_file):
+        workbook = openpyxl.load_workbook(path_file)
         sheet = workbook.active
         sheet.insert_cols(2, amount=2)
+        
+        sheet.cell(row=1, column=1).value = 'GVL_StandardTemplate'
+        sheet.cell(row=1, column=2).value = 'Device'
+        sheet.cell(row=1, column=3).value = 'Parameter'
         
         counter = 2
         for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, values_only=True):
@@ -219,7 +207,7 @@ class excel:
                 sheet.cell(row=counter, column=3).value = parts[2] if len(parts) >= 3 else ""
             counter = counter + 1
             
-        workbook.save(self.path_file_comparison)
+        workbook.save(path_file)
     
     
     def format_sheet(self,path_file):
@@ -241,3 +229,38 @@ class excel:
             cell.border = border
 
         workbook.save(path_file)
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    ### currently not working
+    def set_filters(self):
+        
+        # NOT WORKING SO FAR
+        
+        #load workbook
+        workbook = openpyxl.load_workbook(self.path_file_comparison)
+        sheet = workbook.active
+       
+        # set filters
+        #column_B = 'B'  # Ändere dies entsprechend deiner Spalte
+        #sheet.auto_filter.ref = f'{column_B}:{column_B}'
+
+        # Setze den Filter für die gesamte Spalte
+        #filter_column = FilterColumn(column_id=column_B, customFilters=[CustomFilter(operator="contains", val=val) for val in self.filter])
+        #sheet.add_filter_column(filter_column)
+        
+
+        workbook.save(self.path_file_comparison)
