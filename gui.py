@@ -57,23 +57,31 @@ class user_interface:
         self.entry_widgets = []
         
         self.root = root
-        self.root.title("Compare XML Files")
+        self.root.title("Compare Parameters of PLCs")
         self.root.columnconfigure(0, minsize=250)
         self.root.columnconfigure(1, minsize=150)
         self.root.columnconfigure(2, minsize=400)
 
         self.fixed_width = 900
-        self.initial_height = 170
+        self.initial_height = 250
         self.root.geometry(f"{self.fixed_width}x{self.initial_height}")
+        self.root.minsize(900, 250)  
+        self.root.resizable(width=False, height=True)
         
         self.filters_on = False
         self.filter_index = 0
-        self.options = ["No Filter","Induction", "Dynamic Buffer", "Order Buffer", "Matrix Presorter", "Packing", "Packing"]
+        self.options = ["No Filter","Induction", "Dynamic Buffer", "Order Buffer", "Matrix Presorter", "Packing", "Crossover"]
         
         
         # Row 0
-        self.short_info = tk.Label(root, text="Helptext")
-        self.short_info.grid(row=0, column=0, padx=10, pady=10,sticky= "w")
+        text1 = "This programme compares the parameters of several PLC projects. Notes on use:\n"
+        text2 = "- Each project requires a name in the column 'Projektname', add more projects with the 'Add Project'-Button\n"
+        text3 = "- Use the 'Choose PLC Projekt Folder'-Button to select the PLC, select the folder that contains the file with the type .tsproj, not the folder with the Git files\n"
+        text4 = "- A target folder is created on the desktop with the comparison files called 'Parameter Comparion'\n"
+        text5 = "- The files within must be closed when using this programme, but do not need to be deleted, they will be overwritten\n"
+        infotext = text1 + text2 + text3 + text4 + text5
+        self.short_info = tk.Label(root, text=infotext, justify="left")
+        self.short_info.grid(row=0, column=0,columnspan=3, padx=10, pady=10,sticky= "w")
         
         self.dropdown_var = tk.StringVar(root)
         self.dropdown = ttk.Combobox(root, textvariable=self.dropdown_var, values=self.options)
@@ -104,12 +112,6 @@ class user_interface:
         self.row_widgets = []
         
         self.add_new_project_row()
-        
-        self.fixed_width = 900
-        self.initial_height = 170
-        self.root.geometry(f"{self.fixed_width}x{self.new_height}")
-        self.root.minsize(900, 200)  
-        self.root.resizable(width=False, height=True)
 
 
     def add_new_project_row(self):
