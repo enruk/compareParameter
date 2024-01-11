@@ -45,7 +45,7 @@ if __name__ == "__main__":
         new_project.write_changes_to_standard_template()
         
         # get the local changes
-        new_project.get_local_changes(comp.Ignored_folders,comp.ignored_parameters)
+        new_project.get_local_changes(ignored_folders=comp.Ignored_folders,ignored_param=comp.ignored_parameters)
         
         # add project to projectlist
         project_list.append(new_project)
@@ -60,18 +60,18 @@ if __name__ == "__main__":
     # add more projects to excel sheet
     if number_of_projects > 1:
         for index_in_project_list in range(1,number_of_projects):
-            comp.add_next_project_to_mainfile(index_in_project_list)
+            comp.add_next_project_to_mainfile(index_in_project_list=index_in_project_list)
             comp.compare_parameters_in_file(file_path=comp.path_file_comparison, compare_column_in_excel=2, column_in_excel=comp.project_list[index_in_project_list].column_in_excel)
             
     # Add 2 columns between A and B and split GVL to make it easier to filter in excel
-    comp.format_parameter_column(comp.path_file_comparison)
-    comp.format_sheet(comp.path_file_comparison)
+    comp.format_parameter_column(file_path= comp.path_file_comparison)
+    comp.format_sheet(file_path=comp.path_file_comparison)
     
     print("Parameter Comparison done")
     
     # create excel files for local changes of each project
     for index_in_project_list in range(number_of_projects):
-        comp.write_local_changes_to_excel(index_in_project_list)
+        comp.write_local_changes_to_excel(index_in_project_list=index_in_project_list)
         
     print("Local Parameter changes collected")
 
@@ -79,7 +79,7 @@ if __name__ == "__main__":
     if comp.filters_on:
         comp.get_filters()
         comp.copy_comparison_with_filter()
-        comp.format_sheet(comp.path_file_filtered_comparion) 
+        comp.format_sheet(file_path=comp.path_file_filtered_comparion) 
         
     print("Filtered Parameter Comparison done")
     

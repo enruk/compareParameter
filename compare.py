@@ -218,8 +218,8 @@ class comparison:
         dest_wb.save(self.path_file_filtered_comparion)
         
     
-    def format_parameter_column(self, path_file):
-        workbook = openpyxl.load_workbook(path_file)
+    def format_parameter_column(self, file_path):
+        workbook = openpyxl.load_workbook(file_path)
         sheet = workbook.active
         sheet.insert_cols(2, amount=2)
         
@@ -236,11 +236,11 @@ class comparison:
                 sheet.cell(row=counter, column=3).value = parts[2] if len(parts) >= 3 else ""
             counter = counter + 1
             
-        workbook.save(path_file)
+        workbook.save(file_path)
     
     
-    def format_sheet(self,path_file):
-        workbook = openpyxl.load_workbook(path_file)
+    def format_sheet(self,file_path):
+        workbook = openpyxl.load_workbook(file_path)
         sheet = workbook.active
         
         for column_letter in "ABCDEFGH":
@@ -257,7 +257,7 @@ class comparison:
             cell.alignment = alignment
             cell.border = border
 
-        workbook.save(path_file)
+        workbook.save(file_path)
         
         
         
