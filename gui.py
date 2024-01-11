@@ -55,6 +55,7 @@ class user_interface:
     def __init__(self, root):
         
         self.entry_widgets = []
+        self.data_array = []
         
         self.root = root
         self.root.title("Compare Parameters of PLCs")
@@ -96,7 +97,7 @@ class user_interface:
         self.add_button = tk.Button(root, text="Remove Project", command=self.delete_row, width = button_width_small)
         self.add_button.grid(row=1, column=1, padx=10, pady=10, sticky="w")
 
-        self.run_button = tk.Button(root, text="Run", command=self.close_window, width = button_width_small)
+        self.run_button = tk.Button(root, text="Run", command=self.run_programm, width = button_width_small)
         self.run_button.grid(row=1, column=2, padx=10, pady=10,sticky="w")
         
         
@@ -151,8 +152,8 @@ class user_interface:
         self.root.grid_rowconfigure(row_count, weight=1)
         return row_count        
 
-    def close_window(self):
-        self.data_array = []
+    def run_programm(self):
+        
         for entry in self.entry_widgets:
             entry_string = entry.get()
             self.data_array.append(entry_string)
