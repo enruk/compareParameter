@@ -15,5 +15,12 @@
         <Parameter>exitNumber</Parameter>
         <Parameter>isAlwaysActive</Parameter>
         <Parameter>directionReversal</Parameter>
+        <Parameter>dummyLoopStopper</Parameter>
+        <Parameter>sorterID</Parameter>
+        <Parameter>TrackIsEmpty_cm</Parameter>
+        <Parameter>inductionID_Comms</Parameter>
+        <Parameter>HMIStatisticCarrierBase</Parameter>
+        <Parameter>startStopArea</Parameter>
+
     </IgnoredParameters>
 </Configuration>

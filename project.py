@@ -25,14 +25,17 @@ class project:
         
         name_standardtemplate = "PRG_StandardTemplate.TcPOU"
         name_standardtemplateschanges = "PRG_StandardTemplatesChanges.TcPOU"
-         
-        files = os.listdir(self.path_to_project_special_folder)
-                
-        if name_standardtemplate in files and name_standardtemplateschanges in files:
-            self.file_path_standard_template = self.path_to_project_special_folder + "/" +name_standardtemplate
-            self.file_path_standard_templates_changes = self.path_to_project_special_folder + "/" +name_standardtemplateschanges
+        
+        if os.path.isdir(self.path_to_project_special_folder):
+            files = os.listdir(self.path_to_project_special_folder)
+                    
+            if name_standardtemplate in files and name_standardtemplateschanges in files:
+                self.file_path_standard_template = self.path_to_project_special_folder + "/" +name_standardtemplate
+                self.file_path_standard_templates_changes = self.path_to_project_special_folder + "/" +name_standardtemplateschanges
+            else:
+                print(f"For the projekt '{self.name}': PRG_StandardTemplate.TcPOU and / or the PRG_StandardTemplatesChanges.TcPOU weren't found in ProjectSpecials-Folder")
         else:
-            print(f"For the projekt '{self.name}' it was not possible to find the PRG_StandardTemplate.TcPOU and / or the PRG_StandardTemplatesChanges.TcPOU")
+            print(f"For the projekt '{self.name}': Folder ProjectSpecials wasn't found")
     
     
     def get_param_from_standardtemplate(self):
@@ -65,15 +68,17 @@ class project:
         # go in every sub folders and get all programs in each sub folder
         for sub_folder in clean_project_folder:
             temp_sub_folder_path = self.path_to_project_folder + "/" + sub_folder
-            content_program_folder = os.listdir(temp_sub_folder_path)
-            clean_program_folder = [element for element in content_program_folder if element != "DUTs"]
-            
-            # go throw all programs, create a temporaly list of local changes
-            for program in clean_program_folder:
-                program_path = temp_sub_folder_path + "/" + program
-                temp_parameter_list = parameter_list(program_path)
-                temp_parameter_list.read_local_param_from_file(ignored_param)
+            if os.path.isdir(temp_sub_folder_path):
+                content_program_folder = os.listdir(temp_sub_folder_path)
+                clean_program_folder = [element for element in content_program_folder if element != "DUTs"]
                 
-                # copy all temporary changes to the main list for local changes
-                self.local_parameter_changes.parameters.extend(temp_parameter_list.parameters)
-                temp_parameter_list.parameters.clear()
+                # go throw all programs, create a temporaly list of local changes
+                for program in clean_program_folder:
+                    program_path = temp_sub_folder_path + "/" + program
+                    if os.path.isfile(program_path):
+                        temp_parameter_list = parameter_list(program_path)
+                        temp_parameter_list.read_local_param_from_file(ignored_param)
+                        
+                        # copy all temporary changes to the main list for local changes
+                        self.local_parameter_changes.parameters.extend(temp_parameter_list.parameters)
+                        temp_parameter_list.parameters.clear()

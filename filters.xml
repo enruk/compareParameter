@@ -2,7 +2,6 @@
 <Configuration>
     
     <Induction>
-        <Filter>deviceInfo</Filter>
         <Filter>DivertEmptiesCo4PE</Filter>
         <Filter>MergeEmptyStorage</Filter>
         <Filter>StopperVolumeDivert</Filter>
@@ -42,7 +41,6 @@
     </Induction>
 
     <Dynamicbuffer>
-        <Filter>deviceInfo</Filter>
         <Filter>MergeInfeed</Filter>
         <Filter>MergeInfeedR400</Filter>
         <Filter>InfeedStopperMI</Filter>
@@ -55,7 +53,6 @@
     </Dynamicbuffer>
 
     <Orderbuffer>
-        <Filter>deviceInfo</Filter>
         <Filter>MergeInfeed</Filter>
         <Filter>MergeInfeedR400</Filter>
         <Filter>InfeedStopperMI</Filter>
@@ -72,8 +69,7 @@
         <Filter>orderBufferHI</Filter>
     </Orderbuffer>
 
-    <Matrix_PreSorter>
-        <Filter>deviceInfo</Filter>
+    <Matrix_Presorter>
         <Filter>sorterMatrix</Filter>
         <Filter>matrixLane</Filter>
         <Filter>matrixTopStopper</Filter>
@@ -92,10 +88,9 @@
         <Filter>StopperDivertPreSorter</Filter>
         <Filter>OutfeedStopperPreSorter</Filter>
         <Filter>loopStopperPreSorter</Filter>
-    </Matrix_PreSorter>
+    </Matrix_Presorter>
 
     <Packing>
-        <Filter>deviceInfo</Filter>
         <Filter>MergeInfeed</Filter>
         <Filter>DivertEmptiesCo4PE</Filter>
         <Filter>MergeEmptyStorage</Filter>

@@ -3,7 +3,7 @@ import os
 import openpyxl 
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 import xml.etree.ElementTree as ET
-from openpyxl.worksheet.filters import FilterColumn, CustomFilter
+from copy import copy
      
 class comparison:
     
@@ -115,6 +115,8 @@ class comparison:
             row_value.append(parameter.value)
         
         df = panda.DataFrame({'Parameter': row_param, self.project_list[0].name: row_value})
+        
+        #### TODO: CHECK IF FILE IS STILL OPEN
         df.to_excel(self.path_file_comparison,index=False)  
     
         
@@ -144,24 +146,23 @@ class comparison:
         workbook.save(self.path_file_comparison)
         
         
-    def compare_parameters_in_mainfile(self,index_in_project_list):
+    def compare_parameters_in_file(self,file_path,compare_column_in_excel, column_in_excel):
         
-        workbook = openpyxl.load_workbook(self.path_file_comparison)
+        workbook = openpyxl.load_workbook(file_path)
         sheet = workbook.active
         
         counter = 2
         for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, values_only=True):
             
-            value_row_master = str(row[1]) 
-            value_row_x = str(row[self.project_list[index_in_project_list].column_in_excel-1])  
+            value_row_master = str(row[compare_column_in_excel-1]) 
+            value_row_x = str(row[column_in_excel-1])  
 
             if value_row_master != value_row_x:
-                    cell = sheet.cell(row=counter,column = self.project_list[index_in_project_list].column_in_excel)
+                    cell = sheet.cell(row=counter,column = column_in_excel)
                     cell.fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
             counter = counter + 1
         
-        workbook.save(self.path_file_comparison)
-        
+        workbook.save(file_path)
         
     def write_local_changes_to_excel(self,index_in_project_list):
         
@@ -187,7 +188,35 @@ class comparison:
 
         filtered_dataframe = original_dataframe[original_dataframe['Device'].isin(self.filter)]
         filtered_dataframe.to_excel(self.path_file_filtered_comparion, index=False)
-    
+        
+
+    def copy_comparison_with_filter(self):
+        src_wb = openpyxl.load_workbook(self.path_file_comparison)
+        dest_wb = openpyxl.Workbook()
+
+        src_sheet = src_wb.active
+        dest_sheet = dest_wb.active
+        counter = 0
+        for row_strings in src_sheet.iter_rows(min_row=1, values_only=True):
+            counter = counter + 1
+            if row_strings[1] in self.filter:
+                #add row to destination sheet
+                dest_sheet.append(row_strings)
+                
+                # get objects of dest_row and src_row
+                dest_row_index = dest_sheet.max_row
+                dest_row = dest_sheet[dest_row_index]
+                src_row = src_sheet[counter]
+                
+                for col in range(0,5):
+                    dest_row[col].font = copy(src_row [col].font)
+                    dest_row[col].border = copy(src_row [col].border)
+                    dest_row[col].fill = copy(src_row [col].fill)
+                    dest_row[col].number_format = copy(src_row [col].number_format)
+                    dest_row[col].alignment = copy(src_row [col].alignment)
+
+        dest_wb.save(self.path_file_filtered_comparion)
+        
     
     def format_parameter_column(self, path_file):
         workbook = openpyxl.load_workbook(path_file)

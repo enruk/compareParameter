@@ -19,7 +19,7 @@ if __name__ == "__main__":
     comp = comparison()
     comp.set_target_file_path()
     comp.get_info_for_script()
-    print("Information gathered")
+    print("Information gathered from GUI")
     
     # get filter info from GUI
     comp.filters_on = app.filters_on
@@ -61,13 +61,13 @@ if __name__ == "__main__":
     if number_of_projects > 1:
         for index_in_project_list in range(1,number_of_projects):
             comp.add_next_project_to_mainfile(index_in_project_list)
-            comp.compare_parameters_in_mainfile(index_in_project_list)
+            comp.compare_parameters_in_file(file_path=comp.path_file_comparison, compare_column_in_excel=2, column_in_excel=comp.project_list[index_in_project_list].column_in_excel)
             
     # Add 2 columns between A and B and split GVL to make it easier to filter in excel
     comp.format_parameter_column(comp.path_file_comparison)
     comp.format_sheet(comp.path_file_comparison)
     
-    print("Parameter Comparion done")
+    print("Parameter Comparison done")
     
     # create excel files for local changes of each project
     for index_in_project_list in range(number_of_projects):
@@ -78,10 +78,10 @@ if __name__ == "__main__":
     # set filters if needed
     if comp.filters_on:
         comp.get_filters()
-        comp.create_filtered_copy()
-        comp.format_sheet(comp.path_file_filtered_comparion)
+        comp.copy_comparison_with_filter()
+        comp.format_sheet(comp.path_file_filtered_comparion) 
         
-    print("Filtered Parameter Comparion done")
+    print("Filtered Parameter Comparison done")
     
     # Tell user script is done
     print("Program Done")

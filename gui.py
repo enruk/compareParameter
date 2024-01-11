@@ -130,6 +130,7 @@ class user_interface:
     def delete_row(self):
         rows = self.root.grid_size()[1]
         if rows > 4:
+            #delete in gui
             for column in range(self.root.grid_size()[0]):
                 slaves = self.root.grid_slaves(row=rows-1, column=column)
                 if slaves:
@@ -140,6 +141,9 @@ class user_interface:
             
             self.new_height = self.root.winfo_height() - 50 
             self.root.geometry(f"{self.fixed_width}x{self.new_height}")
+            
+            #delete in widget array
+            self.entry_widgets = self.entry_widgets[:-2]
 
 
     def add_row(self):
