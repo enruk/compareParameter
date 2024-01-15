@@ -50,7 +50,7 @@ class project:
         for parameter_changes in self.standard_templates_changes.parameters:
             counter = 0
             for parameter_standard in self.standard_template.parameters:
-                if parameter_standard.name == parameter_changes.name:
+                if parameter_standard.name.lower() == parameter_changes.name.lower():
                     self.standard_template.parameters[counter].value = parameter_changes.value
                     break
                 counter = counter + 1 

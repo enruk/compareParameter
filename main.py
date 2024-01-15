@@ -3,6 +3,8 @@ import gui
 from project import project
 from compare import comparison
  
+# venv\Scripts\pyinstaller.exe --onefile main.py
+ 
 try:
     if __name__ == "__main__":
         

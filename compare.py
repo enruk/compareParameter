@@ -208,7 +208,7 @@ class comparison:
                 dest_row = dest_sheet[dest_row_index]
                 src_row = src_sheet[counter]
                 
-                for col in range(0,5):
+                for col in range(0,10):
                     dest_row[col].font = copy(src_row [col].font)
                     dest_row[col].border = copy(src_row [col].border)
                     dest_row[col].fill = copy(src_row [col].fill)
