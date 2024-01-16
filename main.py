@@ -8,6 +8,7 @@ from compare import comparison
 try:
     if __name__ == "__main__":
         
+        # start GUI
         root = tk.Tk()
         app = gui.user_interface(root)
         root.mainloop()
@@ -58,7 +59,7 @@ try:
             # add project to projectlist
             project_list.append(new_project)
         
-        # write project list to excel class
+        # write project list to compare class
         comp.project_list = project_list
         print("Parameter gathered")
         
@@ -74,13 +75,11 @@ try:
         # Add 2 columns between A and B and split GVL to make it easier to filter in excel
         comp.format_parameter_column(file_path= comp.path_file_comparison)
         comp.format_sheet(file_path=comp.path_file_comparison)
-        
         print("Parameter Comparison done")
         
         # create excel files for local changes of each project
         for index_in_project_list in range(number_of_projects):
             comp.write_local_changes_to_excel(index_in_project_list=index_in_project_list)
-            
         print("Local Parameter changes collected")
 
         # set filters if needed
@@ -88,7 +87,6 @@ try:
             comp.get_filters()
             comp.copy_comparison_with_filter()
             comp.format_sheet(file_path=comp.path_file_filtered_comparion) 
-            
         print("Filtered Parameter Comparison done")
         
         # Tell user script is done

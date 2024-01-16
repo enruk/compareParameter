@@ -50,7 +50,6 @@ class comparison:
         original_working_dir = os.getcwd()
         new_path = self.get_new_working_path(original_working_dir)
         xml_file_path = os.path.join(new_path, 'stuff_to_ignore.xml')
-        print(xml_file_path)
 
         # parse the XML data
         tree = ET.parse(xml_file_path)
@@ -75,7 +74,6 @@ class comparison:
         original_working_dir = os.getcwd()
         new_path = self.get_new_working_path(original_working_dir)
         xml_file_path = os.path.join(new_path, 'filters.xml')
-        print(xml_file_path)
 
         # parse the XML data
         tree = ET.parse(xml_file_path)
