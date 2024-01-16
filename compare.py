@@ -31,13 +31,26 @@ class comparison:
             os.mkdir(self.path_target_folder)
         self.path_file_comparison = os.path.join(self.path_target_folder, "Parameter Comparison.xlsx")     
         self.path_file_filtered_comparion = os.path.join(self.path_target_folder, "Fitlered Parameter Comparison.xlsx")     
+    
+    def get_new_working_path(self,original_path):
         
+        # get the real working path of the script
+        directory, filename = os.path.split(original_path)
+        folders = directory.split(os.path.sep)
+        if 'dist' in folders:
+            folders.remove('dist') 
+        new_directory = os.path.sep.join(folders)
+        new_path = f'{new_directory}{os.path.sep}{filename}'
+
+        return new_path
         
     def get_info_for_script(self):
 
         # get path to xml
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        xml_file_path = os.path.join(script_dir, 'stuff_to_ignore.xml')
+        original_working_dir = os.getcwd()
+        new_path = self.get_new_working_path(original_working_dir)
+        xml_file_path = os.path.join(new_path, 'stuff_to_ignore.xml')
+        print(xml_file_path)
 
         # parse the XML data
         tree = ET.parse(xml_file_path)
@@ -59,8 +72,10 @@ class comparison:
     def get_filters(self):
         
         # get path to xml
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        xml_file_path = os.path.join(script_dir, 'filters.xml')
+        original_working_dir = os.getcwd()
+        new_path = self.get_new_working_path(original_working_dir)
+        xml_file_path = os.path.join(new_path, 'filters.xml')
+        print(xml_file_path)
 
         # parse the XML data
         tree = ET.parse(xml_file_path)
@@ -208,7 +223,7 @@ class comparison:
                 dest_row = dest_sheet[dest_row_index]
                 src_row = src_sheet[counter]
                 
-                for col in range(0,10):
+                for col in range(0,5):
                     dest_row[col].font = copy(src_row [col].font)
                     dest_row[col].border = copy(src_row [col].border)
                     dest_row[col].fill = copy(src_row [col].fill)
