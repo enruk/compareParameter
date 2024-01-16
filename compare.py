@@ -174,7 +174,7 @@ class comparison:
 
             if value_row_master != value_row_x:
                     cell = sheet.cell(row=counter,column = column_in_excel)
-                    cell.fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
+                    cell.fill = PatternFill(start_color="FF8888", end_color="FF0000", fill_type="solid")
             counter = counter + 1
         
         workbook.save(file_path)
@@ -212,13 +212,15 @@ class comparison:
         src_sheet = src_wb.active
         dest_sheet = dest_wb.active
         counter = 0
-        for row_strings in src_sheet.iter_rows(min_row=1, values_only=True):
-            counter = counter + 1
-            if row_strings[1] in self.filter:
+        
+        for row_strings in src_sheet.iter_rows(min_row=0, values_only=True):
+            counter = counter + 1 
+            #copy if row is in filter or its the first row / header
+            if row_strings[1] in self.filter or counter == 1:
                 #add row to destination sheet
                 dest_sheet.append(row_strings)
                 
-                # get objects of dest_row and src_row
+                # copy the format and cell filling
                 dest_row_index = dest_sheet.max_row
                 dest_row = dest_sheet[dest_row_index]
                 src_row = src_sheet[counter]
@@ -229,6 +231,9 @@ class comparison:
                     dest_row[col].fill = copy(src_row [col].fill)
                     dest_row[col].number_format = copy(src_row [col].number_format)
                     dest_row[col].alignment = copy(src_row [col].alignment)
+            
+                   
+            
 
         dest_wb.save(self.path_file_filtered_comparion)
         
