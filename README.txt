@@ -1,7 +1,7 @@
-# compareXML
+# compareParameter
 
 ##DESCRIPTION
-compare standardtemplate.xml of different PLCs to be able to compare parameters in different projects
+compare parameters of different PLCs
 
 ######### ------------------- VERSION ------------------- #########
 1.0 - initial version                               18.12.2023      HT
@@ -46,7 +46,7 @@ compare standardtemplate.xml of different PLCs to be able to compare parameters 
 
     ######### ------- Select the correct project folder
     You need to choose the folder that contains the "OverheadSystems"-folder
-    
+
     Your PLC     <---- select that folder
         .vs
         _Boot
