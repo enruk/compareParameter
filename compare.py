@@ -18,8 +18,9 @@ class comparison:
         self.ignored_parameters = []
         self.Ignored_folders = []
         
+        self.local_changes_On = False
         self.filter = []
-        self.filters_on = False
+        self.filters_On = False
         self.filter_index = 0, # 1=induction, 2=dynamicbuffer, 3=orderbuffer, 4=matrix_presorter, 5=packing
 
         

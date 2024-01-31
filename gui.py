@@ -8,22 +8,6 @@ button_width_big = 30
 button_width_small = 15
 
 
-class projectrow:
-    
-    def __init__(self, root, targetrow):
-        
-        self.targetrow = targetrow
-        self.root = root
-    
-        # Row X
-        self.project_label = tk.Label(root, text="Projekt:")
-        self.project_label.grid(row=self.targetrow, column=0, padx=10, pady=10,sticky= "w")
-        
-        self.project_entry = tk.Entry(root)
-        self.project_entry.grid(row=self.targetrow, column=1, padx=10, pady=10,sticky= "w")
-        self.project_entry.config(width=entries_width_small)
-
-
 class inputrow:
     
     def __init__(self, root, targetrow, labelname):
@@ -54,9 +38,17 @@ class user_interface:
     
     def __init__(self, root):
         
+        # porject info
         self.entry_widgets = []
-        self.data_array = []
+        self.data_array_projects = []
+        self.get_local_changes = False
         
+        # filter info
+        self.filters_on = False
+        self.filter_index = 0
+        self.options = ["No Filter","Induction", "Dynamic Buffer", "Order Buffer", "Matrix Presorter", "Packing", "Crossover"]
+        
+        # root info
         self.root = root
         self.root.title("Compare Parameters of PLCs")
         self.root.columnconfigure(0, minsize=250)
@@ -64,44 +56,35 @@ class user_interface:
         self.root.columnconfigure(2, minsize=400)
 
         self.fixed_width = 900
-        self.initial_height = 250
+        self.initial_height = 200
         self.root.geometry(f"{self.fixed_width}x{self.initial_height}")
-        self.root.minsize(900, 250)  
+        self.root.minsize(900, 200)  
         self.root.resizable(width=False, height=True)
-        
-        self.filters_on = False
-        self.filter_index = 0
-        self.options = ["No Filter","Induction", "Dynamic Buffer", "Order Buffer", "Matrix Presorter", "Packing", "Crossover"]
         
         
         # Row 0
-        text1 = "This programme compares the parameters of several PLC projects. Notes on use:\n"
-        text2 = "- Each project requires a name in the column 'Projektname', add more projects with the 'Add Project'-Button\n"
-        text3 = "- Use the 'Choose PLC Projekt Folder'-Button to select the PLC, select the folder that contains the file with the type .tsproj, not the folder with the Git files\n"
-        text4 = "- A target folder is created on the desktop with the comparison files called 'Parameter Comparion'\n"
-        text5 = "- The files within must be closed when using this programme, but do not need to be deleted, they will be overwritten\n"
-        infotext = text1 + text2 + text3 + text4 + text5
-        self.short_info = tk.Label(root, text=infotext, justify="left")
+        infotext = "Compare of Parameters"
+        self.short_info = tk.Label(root, text=infotext, justify="left",font=("Helvetica", 14, "bold"))
         self.short_info.grid(row=0, column=0,columnspan=3, padx=10, pady=10,sticky= "w")
         
-        self.dropdown_var = tk.StringVar(root)
-        self.dropdown = ttk.Combobox(root, textvariable=self.dropdown_var, values=self.options)
-        self.dropdown.set("Choose a Filter") 
-        self.dropdown.grid(row=1, column=2, padx=20, pady=10,sticky= "e")
-        
+        self.checkbox_var = tk.BooleanVar()
+        self.checkbox = tk.Checkbutton(root, text="Get local changes of all PLCs", variable=self.checkbox_var)
+        self.checkbox.grid(row=0, column=2, padx=10, pady=10,sticky="w")
         
         # Row 1
         self.add_button = tk.Button(root, text="Add Project", command=self.add_new_project_row, width = button_width_small)
         self.add_button.grid(row=1, column=0, padx=10, pady=10, sticky="w")
         
-        self.add_button = tk.Button(root, text="Remove Project", command=self.delete_row, width = button_width_small)
-        self.add_button.grid(row=1, column=1, padx=10, pady=10, sticky="w")
+        self.delete_button = tk.Button(root, text="Remove Project", command=self.delete_row, width = button_width_small)
+        self.delete_button.grid(row=1, column=1, padx=10, pady=10, sticky="w")
 
         self.run_button = tk.Button(root, text="Run", command=self.run_programm, width = button_width_small)
-        self.run_button.grid(row=1, column=2, padx=10, pady=10,sticky="w")
+        self.run_button.grid(row=1, column=2, padx=10, pady=10,sticky="e")
         
-        
-
+        self.dropdown_var = tk.StringVar(root)
+        self.dropdown = ttk.Combobox(root, textvariable=self.dropdown_var, values=self.options)
+        self.dropdown.set("Choose a Filter") 
+        self.dropdown.grid(row=1, column=2, padx=20, pady=10,sticky= "w")
         
         # Row 2
         self.header_project_name = tk.Label(root, text="Projectname")
@@ -152,32 +135,36 @@ class user_interface:
         self.root.grid_rowconfigure(row_count, weight=1)
         return row_count        
 
+
     def run_programm(self):
         
+        # get project info
         for entry in self.entry_widgets:
             entry_string = entry.get()
-            self.data_array.append(entry_string)
+            self.data_array_projects.append(entry_string)
+        self.get_local_changes = self.checkbox_var.get()
         
-        selected_value = self.dropdown_var.get()
-        if selected_value == "No Filter":
+        # get filter info
+        selected_filter = self.dropdown_var.get()
+        if selected_filter == "No Filter":
             self.filters_on = False
             self.filter_index = 0
-        elif selected_value == "Induction":
+        elif selected_filter == "Induction":
             self.filters_on = True
             self.filter_index = 1
-        elif selected_value == "Dynamic Buffer":
+        elif selected_filter == "Dynamic Buffer":
             self.filters_on = True
             self.filter_index = 2
-        elif selected_value == "Order Buffer":
+        elif selected_filter == "Order Buffer":
             self.filters_on = True
             self.filter_index = 3
-        elif selected_value == "Matrix Presorter":
+        elif selected_filter == "Matrix Presorter":
             self.filters_on = True
             self.filter_index = 4
-        elif selected_value == "Packing":
+        elif selected_filter == "Packing":
             self.filters_on = True
             self.filter_index = 5
-        elif selected_value == "Crossover":
+        elif selected_filter == "Crossover":
             self.filters_on = True
             self.filter_index = 6
         

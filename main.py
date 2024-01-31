@@ -14,13 +14,13 @@ try:
         root.mainloop()
         
         # format data_array from gui to project_data[X][Y], X project, Y data (0=name, 1=folder path)
-        if "" in app.data_array:
+        if "" in app.data_array_projects:
             raise Exception("All projects need a valid name and folder path")
         
-        if len(app.data_array) >= 4:
-            app.data_array = list(filter(lambda x: x != "", app.data_array))
+        if len(app.data_array_projects) >= 4:
+            app.data_array_projects = list(filter(lambda x: x != "", app.data_array_projects))
             project_data = []
-            project_data = [app.data_array[i:i+2] for i in range(0, len(app.data_array), 2)] 
+            project_data = [app.data_array_projects[i:i+2] for i in range(0, len(app.data_array_projects), 2)] 
         else:
             raise Exception("Program needs at least 2 projects")
         
@@ -28,10 +28,11 @@ try:
         comp = comparison()
         comp.set_target_file_path()
         comp.get_info_for_script()
+        comp.local_changes_On = app.get_local_changes
         print("Information gathered from GUI")
         
         # get filter info from GUI
-        comp.filters_on = app.filters_on
+        comp.filters_On = app.filters_on
         comp.filter_index = app.filter_index
         
         # read projects
@@ -49,6 +50,9 @@ try:
             
             # fill parameter_list with data from templates
             new_project.get_param_from_standardtemplate()
+            
+            # clean standardtempletes from duplicates
+            new_project.delete_dupliactes()
             
             # overwrite parameter from standardtemplateschanges to standardtemplate
             new_project.write_changes_to_standard_template()
@@ -77,13 +81,14 @@ try:
         comp.format_sheet(file_path=comp.path_file_comparison)
         print("Parameter Comparison done")
         
-        # create excel files for local changes of each project
-        for index_in_project_list in range(number_of_projects):
-            comp.write_local_changes_to_excel(index_in_project_list=index_in_project_list)
-        print("Local Parameter changes collected")
+        # create excel files for local changes of each project if selected
+        if comp.local_changes_On:
+            for index_in_project_list in range(number_of_projects):
+                comp.write_local_changes_to_excel(index_in_project_list=index_in_project_list)
+            print("Local Parameter changes collected")
 
-        # set filters if needed
-        if comp.filters_on:
+        # create the filtered file if selected
+        if comp.filters_On:
             comp.get_filters()
             comp.copy_comparison_with_filter()
             comp.format_sheet(file_path=comp.path_file_filtered_comparion) 

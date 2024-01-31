@@ -12,6 +12,7 @@ class project:
         self.file_path_standard_templates_changes = ""
         
         self.standard_template = parameter_list
+        self.cleaned_standard_template = parameter_list
         self.standard_templates_changes = parameter_list
         self.local_parameter_changes = parameter_list
         self.column_in_excel = column_in_excel
@@ -54,6 +55,32 @@ class project:
                     self.standard_template.parameters[counter].value = parameter_changes.value
                     break
                 counter = counter + 1 
+                
+                
+    def delete_dupliactes(self):
+        
+        #create a temporary list
+        self.cleaned_standard_template = parameter_list(self.file_path_standard_template)
+        
+        # iterate through original standardtemplate from last entry to zero
+        for counter_original in range(len(self.standard_template.parameters)-1,-1,-1):
+            duplicate_found = False
+            
+            # copy last parameter without check to temporary list, because nothing to check
+            if counter_original == len(self.standard_template.parameters)-1:
+                self.cleaned_standard_template.parameters.insert(0, self.standard_template.parameters[counter_original])
+            
+            # check if parameter from standardtemplate is already in temporary list, if not add it
+            else:
+                for counter_duplcates in range(len(self.cleaned_standard_template.parameters)):
+                    if self.standard_template.parameters[counter_original].name == self.cleaned_standard_template.parameters[counter_duplcates].name:
+                        duplicate_found = True
+                if not duplicate_found:
+                    self.cleaned_standard_template.parameters.insert(0, self.standard_template.parameters[counter_original])
+                    
+        # overwrite standardtemplate list with cleaned list
+        self.standard_template.parameters.clear()
+        self.standard_template = self.cleaned_standard_template
     
     
     def get_local_changes(self,ignored_folders,ignored_param):
