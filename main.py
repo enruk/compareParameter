@@ -22,20 +22,22 @@ try:
             project_data = []
             project_data = [app.data_array_projects[i:i+2] for i in range(0, len(app.data_array_projects), 2)] 
         else:
-            raise Exception("Program needs at least 2 projects")
+            raise Exception("Program needs at least 2 projects, each with a valid name and a folder path")
         
         # create excel file, get desktop path and some info
         comp = comparison()
         comp.set_target_file_path()
+        
         comp.get_info_for_script()
-        comp.local_changes_On = app.get_local_changes
+        comp.local_changes_On = app.local_changes_On
+        comp.summary_differnces_On = app.summary_differences_On
         print("Information gathered from GUI")
         
         # get filter info from GUI
         comp.filters_On = app.filters_on
         comp.filter_index = app.filter_index
         
-        # read projects
+        # read all projects
         project_list = []
         number_of_projects = int(len(project_data))
         for index_in_project_list in range(number_of_projects):
@@ -85,7 +87,7 @@ try:
         if comp.local_changes_On:
             for index_in_project_list in range(number_of_projects):
                 comp.write_local_changes_to_excel(index_in_project_list=index_in_project_list)
-            print("Local Parameter changes collected")
+        print("Local Parameter changes collected")
 
         # create the filtered file if selected
         if comp.filters_On:
@@ -93,6 +95,13 @@ try:
             comp.copy_comparison_with_filter()
             comp.format_sheet(file_path=comp.path_file_filtered_comparion) 
         print("Filtered Parameter Comparison done")
+        
+        # create summary of differences if selected, not working for now
+        if comp.summary_differnces_On:
+            comp.create_list_with_differences(number_of_projects=number_of_projects)
+            comp.format_sheet(file_path=comp.path_file_differences)
+        print("Summary of Differences")
+        
         
         # Tell user script is done
         print("Program Done")

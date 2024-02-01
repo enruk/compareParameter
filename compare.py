@@ -12,18 +12,20 @@ class comparison:
         self.path_target_folder = ""
         self.path_file_comparison = ""
         self.path_file_filtered_comparion = ""
+        self.path_file_differences = ""
         
         self.project_list = []
    
         self.ignored_parameters = []
         self.Ignored_folders = []
         
+        self.summary_differnces_On = False
         self.local_changes_On = False
         self.filter = []
         self.filters_On = False
         self.filter_index = 0, # 1=induction, 2=dynamicbuffer, 3=orderbuffer, 4=matrix_presorter, 5=packing
 
-        
+             
     def set_target_file_path(self): 
         desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
         
@@ -31,7 +33,9 @@ class comparison:
         if not os.path.exists(self.path_target_folder):
             os.mkdir(self.path_target_folder)
         self.path_file_comparison = os.path.join(self.path_target_folder, "Parameter Comparison.xlsx")     
-        self.path_file_filtered_comparion = os.path.join(self.path_target_folder, "Fitlered Parameter Comparison.xlsx")     
+        self.path_file_filtered_comparion = os.path.join(self.path_target_folder, "Parameter Comparison - Fitlered.xlsx")     
+        self.path_file_differences = os.path.join(self.path_target_folder, "Parameter Comparison - Differences.xlsx")
+    
     
     def get_new_working_path(self,original_path):
         
@@ -44,6 +48,7 @@ class comparison:
         new_path = f'{new_directory}{os.path.sep}{filename}'
 
         return new_path
+        
         
     def get_info_for_script(self):
 
@@ -194,14 +199,6 @@ class comparison:
         df.to_excel(path_temp,index=False) 
         
         self.format_sheet(path_temp)
-    
-    
-    def create_filtered_copy(self):
-        self.path_file_filtered_comparion = os.path.join(self.path_target_folder, "Filtered Parameter Comparison.xlsx")
-        original_dataframe = panda.read_excel(self.path_file_comparison)
-
-        filtered_dataframe = original_dataframe[original_dataframe['Device'].isin(self.filter)]
-        filtered_dataframe.to_excel(self.path_file_filtered_comparion, index=False)
         
 
     def copy_comparison_with_filter(self):
@@ -231,11 +228,34 @@ class comparison:
                     dest_row[col].number_format = copy(src_row [col].number_format)
                     dest_row[col].alignment = copy(src_row [col].alignment)
             
-                   
-            
-
         dest_wb.save(self.path_file_filtered_comparion)
+    
+    
+    def cell_is_red(self,cell):
+        return (
+            cell.fill.bgColor.rgb == "00FF0000"
+        )   
+    
+    
+    def create_list_with_differences(self,number_of_projects):
+        src_wb = openpyxl.load_workbook(self.path_file_comparison)
+        src_sheet = src_wb.active
         
+        dest_wb = openpyxl.Workbook()
+        dest_sheet = dest_wb.active
+        
+        # copy header row
+        for row in src_sheet.iter_rows(min_row=1, max_row=1):
+            dest_sheet.append([cell.value for cell in row])
+        
+        # copy row if it has red filled cell
+        for row in src_sheet.iter_rows(min_row=2, max_col = number_of_projects + 3, max_row=src_sheet.max_row):
+            row_data = [cell.value for cell in row]
+            if any(self.cell_is_red(cell) for cell in row):
+                dest_sheet.append(row_data)
+                
+        dest_wb.save(self.path_file_differences)
+    
     
     def format_parameter_column(self, file_path):
         workbook = openpyxl.load_workbook(file_path)

@@ -1,5 +1,7 @@
 import tkinter as tk 
 from tkinter import filedialog, ttk
+import threading
+import main
 
 
 entries_width_small = 30
@@ -41,7 +43,8 @@ class user_interface:
         # porject info
         self.entry_widgets = []
         self.data_array_projects = []
-        self.get_local_changes = False
+        self.local_changes_On = False
+        self.summary_differences_On = False
         
         # filter info
         self.filters_on = False
@@ -67,9 +70,13 @@ class user_interface:
         self.short_info = tk.Label(root, text=infotext, justify="left",font=("Helvetica", 14, "bold"))
         self.short_info.grid(row=0, column=0,columnspan=3, padx=10, pady=10,sticky= "w")
         
-        self.checkbox_var = tk.BooleanVar()
-        self.checkbox = tk.Checkbutton(root, text="Get local changes of all PLCs", variable=self.checkbox_var)
-        self.checkbox.grid(row=0, column=2, padx=10, pady=10,sticky="w")
+        self.checkbox_local_changes_var = tk.BooleanVar()
+        self.checkbox_local_changes = tk.Checkbutton(root, text="Get local changes of all PLCs", variable=self.checkbox_local_changes_var)
+        self.checkbox_local_changes.grid(row=0, column=1, padx=10, pady=10,sticky="w")
+        
+        self.checkbox_differences_var = tk.BooleanVar()
+        self.checkbox_differences = tk.Checkbutton(root, text="Create a summary of the found differences", variable=self.checkbox_differences_var)
+        self.checkbox_differences.grid(row=0, column=2, padx=10, pady=10,sticky="w")
         
         # Row 1
         self.add_button = tk.Button(root, text="Add Project", command=self.add_new_project_row, width = button_width_small)
@@ -142,7 +149,8 @@ class user_interface:
         for entry in self.entry_widgets:
             entry_string = entry.get()
             self.data_array_projects.append(entry_string)
-        self.get_local_changes = self.checkbox_var.get()
+        self.local_changes_On = self.checkbox_local_changes_var.get()
+        self.summary_differences_On = self.checkbox_differences_var.get()
         
         # get filter info
         selected_filter = self.dropdown_var.get()
