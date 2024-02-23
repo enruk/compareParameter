@@ -36,13 +36,13 @@ class parameter_list:
         
         # method is writing all lines with GVL in a parameter list, except for the "ignored_param"
         with open(self.file_path, 'r') as file:
-            parameters_reached = False
+            parameters_reached = False 
             row_counter = 0
             for line in file:
                 row_counter = row_counter + 1 # only for debugging needed
                 line = line.strip()
                 
-                # look for the actParameterChanges
+                # look for the actParameterChanges and jump over the actual program
                 if "MAIN.instProfiler" in line:
                     parameters_reached = True
                 

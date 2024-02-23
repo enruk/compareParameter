@@ -8,11 +8,11 @@ class project:
         self.path_to_PLC_folder = folder_path_project
         self.path_to_project_special_folder = ""
         self.path_to_project_folder= ""
-        self.file_path_standard_template = ""
-        self.file_path_standard_templates_changes = ""
+        self.path_file_standard_template = ""
+        self.path_file_standard_templates_changes = ""
         
         self.standard_template = parameter_list
-        self.cleaned_standard_template = parameter_list
+        self.cleaned_standard_template = parameter_list     # without duplicates
         self.standard_templates_changes = parameter_list
         self.local_parameter_changes = parameter_list
         self.column_in_excel = column_in_excel
@@ -31,8 +31,8 @@ class project:
             files = os.listdir(self.path_to_project_special_folder)
                     
             if name_standardtemplate in files and name_standardtemplateschanges in files:
-                self.file_path_standard_template = self.path_to_project_special_folder + "/" +name_standardtemplate
-                self.file_path_standard_templates_changes = self.path_to_project_special_folder + "/" +name_standardtemplateschanges
+                self.path_file_standard_template = self.path_to_project_special_folder + "/" +name_standardtemplate
+                self.path_file_standard_templates_changes = self.path_to_project_special_folder + "/" +name_standardtemplateschanges
             else:
                 print(f"For the projekt '{self.name}': PRG_StandardTemplate.TcPOU and / or the PRG_StandardTemplatesChanges.TcPOU weren't found in ProjectSpecials-Folder")
         else:
@@ -40,10 +40,10 @@ class project:
     
     
     def get_param_from_standardtemplate(self):
-        self.standard_template = parameter_list(self.file_path_standard_template)
+        self.standard_template = parameter_list(self.path_file_standard_template)
         self.standard_template.read_param_from_file()
         
-        self.standard_templates_changes = parameter_list(self.file_path_standard_templates_changes)
+        self.standard_templates_changes = parameter_list(self.path_file_standard_templates_changes)
         self.standard_templates_changes.read_param_from_file()
     
     
@@ -60,7 +60,7 @@ class project:
     def delete_dupliactes(self):
         
         #create a temporary list
-        self.cleaned_standard_template = parameter_list(self.file_path_standard_template)
+        self.cleaned_standard_template = parameter_list(self.path_file_standard_template)
         
         # iterate through original standardtemplate from last entry to zero
         for counter_original in range(len(self.standard_template.parameters)-1,-1,-1):

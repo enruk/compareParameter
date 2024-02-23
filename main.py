@@ -26,7 +26,7 @@ try:
         
         # create excel file, get desktop path and some info
         comp = comparison()
-        comp.set_target_file_path()
+        comp.get_file_pathes()
         
         comp.get_info_for_script()
         comp.local_changes_On = app.local_changes_On

@@ -26,7 +26,9 @@ class comparison:
         self.filter_index = 0, # 1=induction, 2=dynamicbuffer, 3=orderbuffer, 4=matrix_presorter, 5=packing
 
              
-    def set_target_file_path(self): 
+    def get_file_pathes(self): 
+        # get the file pathes to create and save the excel files
+        
         desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
         
         self.path_target_folder = os.path.join(desktop_path, "Parameter Comparison")
@@ -38,8 +40,8 @@ class comparison:
     
     
     def get_new_working_path(self,original_path):
+        # get the real working path of the script, this is needed to get access to the xml's
         
-        # get the real working path of the script
         directory, filename = os.path.split(original_path)
         folders = directory.split(os.path.sep)
         if 'dist' in folders:
@@ -51,6 +53,7 @@ class comparison:
         
         
     def get_info_for_script(self):
+        # get info for ignored foldes and parameters from the XML's
 
         # get path to xml
         original_working_dir = os.getcwd()
@@ -75,6 +78,7 @@ class comparison:
         
         
     def get_filters(self):
+        # get the filters
         
         # get path to xml
         original_working_dir = os.getcwd()
@@ -85,7 +89,7 @@ class comparison:
         tree = ET.parse(xml_file_path)
         wurzel = tree.getroot()
 
-        # find IgnoredFolders
+        # delete old filters
         self.filter.clear()
         
         for element in wurzel.find('Always'):
@@ -124,6 +128,7 @@ class comparison:
         
                 
     def write_first_project_to_mainfile(self):
+        # write the first project to column B
         
         row_param = []
         row_value = []
@@ -134,17 +139,17 @@ class comparison:
             row_value.append(parameter.value)
         
         df = panda.DataFrame({'Parameter': row_param, self.project_list[0].name: row_value})
-        
-        #### TODO: CHECK IF FILE IS STILL OPEN
         df.to_excel(self.path_file_comparison,index=False)  
     
         
     def add_next_project_to_mainfile(self,index_in_project_list):
+        # add the next project in the project_list to the next free column
         
         workbook = openpyxl.load_workbook(self.path_file_comparison)
         sheet = workbook.active
         sheet.cell(row=1, column=self.project_list[index_in_project_list].column_in_excel, value=self.project_list[index_in_project_list].name)
-        
+    
+        # read every parameter from project and look where it is in the first project that is already in the excel
         for parameter in self.project_list[index_in_project_list].standard_template.parameters:
             look_up_parameter = parameter.name
             counter = 0
@@ -182,6 +187,7 @@ class comparison:
             counter = counter + 1
         
         workbook.save(file_path)
+        
         
     def write_local_changes_to_excel(self,index_in_project_list):
         
@@ -270,9 +276,9 @@ class comparison:
         for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, values_only=True):
             if row[0] and "." in row[0]:
                 parts = row[0].split(".")
-                sheet.cell(row=counter, column=1).value = parts[0] if len(parts) >= 1 else ""
-                sheet.cell(row=counter, column=2).value = parts[1] if len(parts) >= 2 else ""
-                sheet.cell(row=counter, column=3).value = parts[2] if len(parts) >= 3 else ""
+                sheet.cell(row=counter, column=1).value = parts[0]
+                sheet.cell(row=counter, column=2).value = parts[1]
+                sheet.cell(row=counter, column=3).value = '.'.join(parts[2:])
             counter = counter + 1
             
         workbook.save(file_path)
