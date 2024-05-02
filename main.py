@@ -36,7 +36,7 @@ try:
         # get filter info from GUI
         comp.filters_On = app.filters_on
         comp.filter_index = app.filter_index
-        
+       
         # read all projects
         project_list = []
         number_of_projects = int(len(project_data))
@@ -54,7 +54,7 @@ try:
             new_project.get_param_from_standardtemplate()
             
             # clean standardtempletes from duplicates
-            new_project.delete_dupliactes()
+            new_project.delete_duplicates()
             
             # overwrite parameter from standardtemplateschanges to standardtemplate
             new_project.write_changes_to_standard_template()

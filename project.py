@@ -57,7 +57,7 @@ class project:
                 counter = counter + 1 
                 
                 
-    def delete_dupliactes(self):
+    def delete_duplicates(self):
         
         #create a temporary list
         self.cleaned_standard_template = parameter_list(self.path_file_standard_template)

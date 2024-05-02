@@ -6,6 +6,7 @@ compare parameters of different PLCs
 ######### ------------------- VERSION ------------------- #########
 1.0 - initial version                               18.12.2023      HT
 1.1 - implement local changes and filters           17.01.2024      HT
+1.2 - optimize formating			    02.05.2024      HT
 
 ######### ------------------- HOWTO ------------------- #########
 
